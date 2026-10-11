@@ -2,7 +2,7 @@
 Screen Time & App Usage Tracker
 Entry point for the application.
 
-Run with: python -m screen_time_tracker
+Run with: python -m productivity_tracker
 """
 
 import sys
@@ -11,7 +11,7 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from screen_time_tracker.menu import run_menu
+from productivity_tracker.menu import run_menu
 
 
 def main():

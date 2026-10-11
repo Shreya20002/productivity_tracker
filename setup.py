@@ -45,13 +45,13 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "screen-time-tracker=screen_time_tracker.__main__:main",
-            "stt=screen_time_tracker.__main__:main",
+            "screen-time-tracker=productivity_tracker.__main__:main",
+            "stt=productivity_tracker.__main__:main",
         ],
     },
     include_package_data=True,
     package_data={
-        "screen_time_tracker": ["data/.gitkeep"],
+        "productivity_tracker": ["data/.gitkeep"],
     },
     keywords="screen time, app usage, tracker, productivity, monitoring",
 )

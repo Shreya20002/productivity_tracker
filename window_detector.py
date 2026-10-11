@@ -90,51 +90,30 @@ def get_active_window_macos():
 
 
 def get_active_window_windows():
-    """Get active window name on Windows using PowerShell."""
+    """Get active window name on Windows using the user32 API via ctypes."""
     try:
-        # PowerShell command to get active window title
-        script = '''
-        Add-Type @"
-        using System;
-        using System.Runtime.InteropServices;
-        public class User32 {
-            [DllImport("user32.dll")]
-            public static extern IntPtr GetForegroundWindow();
-            [DllImport("user32.dll")]
-            public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder text, int count);
-        }
-"@
-        $hwnd = [User32]::GetForegroundWindow()
-        $title = New-Object System.Text.StringBuilder 256
-        [User32]::GetWindowText($hwnd, $title, 256)
-        $title.ToString()
-        '''
-        result = subprocess.run(
-            ['powershell', '-Command', script],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
-    
-    try:
-        # Simpler fallback using tasklist
-        result = subprocess.run(
-            ['powershell', '-Command', 
-             '(Get-Process | Where-Object {$_.MainWindowTitle} | Select-Object -First 1).MainWindowTitle'],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
-    
-    return None
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.WinDLL('user32')
+        user32.GetForegroundWindow.restype = wintypes.HWND
+        user32.GetWindowTextLengthW.argtypes = [wintypes.HWND]
+        user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+
+        hwnd = user32.GetForegroundWindow()
+        if not hwnd:
+            return None
+
+        length = user32.GetWindowTextLengthW(hwnd)
+        if length == 0:
+            return None
+
+        buffer = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(hwnd, buffer, length + 1)
+        return buffer.value.strip() or None
+    except (AttributeError, OSError, ValueError):
+        # ctypes.WinDLL only exists on Windows
+        return None
 
 
 def get_active_window():
@@ -227,8 +206,8 @@ def is_window_detector_available():
         return True, "AppleScript is available"
     
     elif system == 'windows':
-        # PowerShell is always available on modern Windows
-        return True, "PowerShell is available"
+        # ctypes and user32.dll ship with Python and Windows
+        return True, "Windows API (via ctypes) is available"
     
     return False, f"Unsupported operating system: {system}"
 
