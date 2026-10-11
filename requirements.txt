@@ -1,0 +1,10 @@
+# Screen Time & App Usage Tracker
+# No external dependencies required - uses only Python standard library
+
+# Optional dependencies for enhanced functionality:
+# None required - this project is designed to work with Python 3.6+ standard library only
+
+# Development dependencies (optional):
+# pytest>=7.0.0  # For running tests
+# black>=22.0.0  # For code formatting
+# flake8>=4.0.0  # For linting
